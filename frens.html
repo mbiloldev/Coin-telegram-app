@@ -1,144 +1,519 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notcoin - Frens</title>
-
-    <link rel="stylesheet" href="./assets/css/style.css">
-    <link rel="stylesheet" href="./assets/css/responsive.css">
+    <title>CoinTap — Frens</title>
     <meta name="theme-color" content="#f19e36" />
-
     <link rel="icon" type="image/x-icon" href="./assets/favicon/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #f19e36;
+            --gold-light: #ffd27a;
+            --gold-dark: #c97a1a;
+            --bg: #0a0a0f;
+            --surface: #13131f;
+            --surface2: #1c1c2e;
+            --border: rgba(241,158,54,0.18);
+            --text: #ffffff;
+            --muted: rgba(255,255,255,0.45);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 100px;
+        }
+
+        /* BG effects */
+        .bg-particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--gold);
+            animation: floatUp var(--dur) ease-in infinite var(--delay);
+            left: var(--x);
+            width: var(--s); height: var(--s);
+        }
+        @keyframes floatUp {
+            0%   { transform: translateY(110vh); opacity: 0; }
+            10%  { opacity: 0.5; }
+            90%  { opacity: 0.2; }
+            100% { transform: translateY(-10vh); opacity: 0; }
+        }
+
+        .orb {
+            position: fixed; border-radius: 50%;
+            filter: blur(90px); pointer-events: none; z-index: 0;
+            animation: drift 9s ease-in-out infinite alternate;
+        }
+        .orb-1 { width: 350px; height: 350px; top: -80px; right: -80px;
+            background: radial-gradient(circle, rgba(241,158,54,0.15), transparent 70%); }
+        .orb-2 { width: 250px; height: 250px; bottom: 100px; left: -60px;
+            background: radial-gradient(circle, rgba(241,158,54,0.1), transparent 70%); animation-delay: -4s; }
+        @keyframes drift {
+            from { transform: translate(0,0) scale(1); }
+            to   { transform: translate(25px,20px) scale(1.15); }
+        }
+
+        /* Header */
+        .header {
+            position: relative; z-index: 10;
+            display: flex; align-items: center;
+            padding: 20px 20px 12px;
+        }
+        .back-btn {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; transition: all 0.3s;
+        }
+        .back-btn:hover { background: rgba(241,158,54,0.15); border-color: var(--gold); transform: translateX(-3px); }
+
+        /* Hero stats */
+        .hero {
+            position: relative; z-index: 10;
+            padding: 8px 20px 20px;
+            animation: fadeDown 0.5s ease both;
+        }
+        @keyframes fadeDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+
+        .frens-count-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(241,158,54,0.12);
+            border: 1px solid var(--border);
+            border-radius: 20px; padding: 6px 14px;
+            font-size: 13px; font-weight: 600;
+            color: var(--gold); margin-bottom: 16px;
+        }
+        .frens-count-badge::before {
+            content: '';
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--gold);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 0 40px rgba(241,158,54,0.08), inset 0 1px 0 rgba(255,255,255,0.05);
+            cursor: pointer; transition: all 0.3s;
+        }
+        .stats-card:hover { border-color: rgba(241,158,54,0.4); transform: translateY(-2px); }
+
+        .stats-earn {
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .stats-earn-label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+        .stats-earn-value {
+            display: flex; align-items: center; gap: 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 26px; font-weight: 700;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .stats-earn-value img { filter: drop-shadow(0 0 6px rgba(241,158,54,0.8)); }
+
+        .stats-rank {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+        }
+        .stats-rank-num { font-size: 18px; font-weight: 700; }
+        .stats-rank-label {
+            font-size: 11px; color: var(--gold);
+            background: rgba(241,158,54,0.12); border-radius: 6px;
+            padding: 2px 8px; letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .stats-arrow { opacity: 0.4; }
+
+        /* Invite bonus section */
+        .section {
+            position: relative; z-index: 10;
+            padding: 0 20px; margin-bottom: 20px;
+            animation: fadeUp 0.5s ease 0.15s both;
+        }
+        @keyframes fadeUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+
+        .section-title {
+            font-size: 13px; font-weight: 600;
+            color: var(--muted); letter-spacing: 1.5px;
+            text-transform: uppercase; margin-bottom: 12px;
+        }
+
+        .bonus-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .bonus-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 18px;
+            transition: background 0.2s;
+        }
+        .bonus-item:hover { background: rgba(241,158,54,0.05); }
+        .bonus-item + .bonus-item { border-top: 1px solid rgba(255,255,255,0.05); }
+
+        .bonus-left { display: flex; align-items: center; gap: 14px; }
+
+        .bonus-icon {
+            width: 50px; height: 50px; border-radius: 14px;
+            background: rgba(241,158,54,0.1);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .bonus-icon img { filter: drop-shadow(0 0 8px rgba(241,158,54,0.5)); }
+
+        .bonus-text h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .bonus-reward {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 12px; color: var(--muted);
+        }
+        .bonus-reward .amount { color: var(--gold); font-weight: 700; font-family: 'Space Mono', monospace; }
+
+        .bonus-link {
+            font-size: 12px; color: var(--gold); font-weight: 600;
+            text-decoration: none; opacity: 0.8;
+            background: rgba(241,158,54,0.1); border-radius: 8px;
+            padding: 5px 10px; transition: all 0.2s; white-space: nowrap;
+        }
+        .bonus-link:hover { opacity: 1; background: rgba(241,158,54,0.2); }
+
+        /* Frens list */
+        .frens-section {
+            position: relative; z-index: 10;
+            padding: 0 20px;
+            animation: fadeUp 0.5s ease 0.25s both;
+        }
+
+        .frens-list-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .fren-card {
+            background: var(--surface);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 18px; overflow: hidden;
+        }
+
+        .fren-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px;
+            transition: background 0.2s; cursor: pointer;
+            animation: fadeUp 0.4s ease both;
+        }
+        .fren-item:nth-child(1) { animation-delay: 0.3s; }
+        .fren-item:nth-child(2) { animation-delay: 0.4s; }
+        .fren-item:nth-child(3) { animation-delay: 0.5s; }
+        .fren-item:hover { background: rgba(241,158,54,0.04); }
+        .fren-item + .fren-item { border-top: 1px solid rgba(255,255,255,0.04); }
+
+        .fren-left { display: flex; align-items: center; gap: 12px; }
+
+        .fren-avatar {
+            width: 46px; height: 46px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--surface2), #252540);
+            border: 2px solid rgba(241,158,54,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+            position: relative; overflow: hidden;
+        }
+        .fren-avatar img {
+            width: 100%; height: 100%; object-fit: cover;
+            display: none;
+        }
+        .fren-avatar img[src]:not([src=""]) { display: block; }
+
+        .fren-avatar-letter {
+            font-size: 18px; font-weight: 700;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        .fren-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .fren-meta {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 11px; color: var(--muted);
+        }
+        .fren-meta img { opacity: 0.8; }
+        .fren-meta .dot { opacity: 0.3; }
+        .fren-meta .tier {
+            color: var(--gold); font-weight: 600;
+        }
+
+        .fren-right { display: flex; align-items: center; gap: 8px; }
+        .fren-earn {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px; font-weight: 700;
+            color: var(--gold-light);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center; padding: 40px 20px;
+            color: var(--muted); font-size: 13px;
+        }
+        .empty-state .emoji { font-size: 40px; margin-bottom: 10px; }
+
+        /* Invite button */
+        .invite-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 16px 20px;
+            background: linear-gradient(to top, var(--bg) 60%, transparent);
+        }
+
+        .invite-btn {
+            width: 100%;
+            padding: 17px;
+            border: none; border-radius: 18px;
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+            color: #1a0e00;
+            font-family: 'Sora', sans-serif;
+            font-size: 15px; font-weight: 700;
+            letter-spacing: 0.3px;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 8px 30px rgba(241,158,54,0.35);
+        }
+        .invite-btn::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.25), transparent 60%);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .invite-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(241,158,54,0.5); }
+        .invite-btn:hover::before { opacity: 1; }
+        .invite-btn:active { transform: translateY(0); }
+
+        .invite-btn .ripple {
+            position: absolute; border-radius: 50%;
+            background: rgba(255,255,255,0.35);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+    </style>
 </head>
-<body class="frens">
-    
-    <div class="haeder">
-        <a href="/index.html">
-            <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22 11.9299H2" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M8.00009 19L2.84009 14C2.5677 13.7429 2.35071 13.433 2.20239 13.0891C2.05407 12.7452 1.97754 12.3745 1.97754 12C1.97754 11.6255 2.05407 11.2548 2.20239 10.9109C2.35071 10.567 2.5677 10.2571 2.84009 10L8.00009 5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<body>
+
+    <div class="bg-particles" id="particles"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <a href="/index.html" class="back-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M22 12H2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                <path d="M8 19L2 12L8 5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </a>
     </div>
 
-    <div class="frens-main">
+    <!-- Hero -->
+    <div class="hero">
+        <div class="frens-count-badge">11 Frens</div>
 
-        <div class="frens-count">
-            <span>11 Frens</span>
-        </div>
-
-        <div class="frens-total-earn">
-            <div class="frens-total-count">
-                <span>+72.5k</span>
-                <img src="./assets/images/coin.png" width="20px">
+        <div class="stats-card" onclick="window.location='#'">
+            <div class="stats-earn">
+                <div class="stats-earn-label">Total Earned</div>
+                <div class="stats-earn-value">
+                    +72.5k
+                    <img src="./assets/images/coin.png" width="22px" onerror="this.style.display='none'">
+                </div>
             </div>
-
-            <div>
-                <span>Top 300</span>
-                <span class="leaders">leaders</span>
+            <div class="stats-rank">
+                <div class="stats-rank-num">Top 300</div>
+                <div class="stats-rank-label">Leaders</div>
             </div>
-
-            <div>
-                <svg width="23px" height="23px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 5L14.15 10C14.4237 10.2563 14.6419 10.5659 14.791 10.9099C14.9402 11.2539 15.0171 11.625 15.0171 12C15.0171 12.375 14.9402 12.7458 14.791 13.0898C14.6419 13.4339 14.4237 13.7437 14.15 14L9 19" stroke="#ffffff" opacity="0.4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
+            <svg class="stats-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M9 5l5.15 5c.55.51.85 1.23.85 2s-.3 1.49-.85 2L9 19" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
     </div>
 
-
-    <div class="frens-help">
-        <div class="frens-help-title">
-            <span>Invite frens to get bonuses</span>
-        </div>
-
-        <div class="frens-help-box">
-            <div class="frens-help-content">
-                <div class="frens-help-image">
-                    <img src="./assets/images/golden.png" width="50px">
-                </div>
-                <div class="fren-help-text">
-                    <h5>Invite fren</h5>
-                    <div>
-                        <img src="./assets/images/coin.png" width="15px">
-                        <span>2,500</span>
-                        <span>for you and fren</span>
+    <!-- Bonus section -->
+    <div class="section">
+        <div class="section-title">Invite frens → Get bonuses</div>
+        <div class="bonus-card">
+            <div class="bonus-item">
+                <div class="bonus-left">
+                    <div class="bonus-icon">
+                        <img src="./assets/images/golden.png" width="32px"
+                             onerror="this.outerHTML='<span style=font-size:24px>🏆</span>'">
+                    </div>
+                    <div class="bonus-text">
+                        <h5>Invite a Fren</h5>
+                        <div class="bonus-reward">
+                            <img src="./assets/images/coin.png" width="13px" onerror="this.style.display='none'">
+                            <span class="amount">+2,500</span>
+                            <span>for you and fren</span>
+                        </div>
                     </div>
                 </div>
+                <a href="#" class="bonus-link">Details →</a>
             </div>
 
-            <div class="frens-open-detail">
-                <a href="#">Open details</a>
+            <div class="bonus-item">
+                <div class="bonus-left">
+                    <div class="bonus-icon">
+                        <span style="font-size:24px">💎</span>
+                    </div>
+                    <div class="bonus-text">
+                        <h5>Premium Fren</h5>
+                        <div class="bonus-reward">
+                            <img src="./assets/images/coin.png" width="13px" onerror="this.style.display='none'">
+                            <span class="amount">+10,000</span>
+                            <span>for you and fren</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="#" class="bonus-link">Details →</a>
             </div>
         </div>
     </div>
 
-
-    <div class="frens-list">
-        <div class="frens-list-title">
-            <span>Frens List</span>
+    <!-- Frens list -->
+    <div class="frens-section">
+        <div class="frens-list-header">
+            <div class="section-title" style="margin:0">Frens List</div>
         </div>
 
-        <div class="frens-list-box">
-            <div class="frens-data">
-                <div class="frens-profile">
-                    <div class="frens-profile-photo">
+        <div class="fren-card">
+            <div class="fren-item">
+                <div class="fren-left">
+                    <div class="fren-avatar">
                         <img src="" alt="">
+                        <div class="fren-avatar-letter">A</div>
                     </div>
-                    <div class="frens-profile-data">
-                        <h4>User</h4>
-                        <div>
-                            <img src="./assets/images/3d-trophy.png" width="15px">
-                            <span>Gold</span>
-                            <span>•</span>
-                            <img src="./assets/images/coin.png" width="15px">
+                    <div class="fren-info">
+                        <h4>Alex</h4>
+                        <div class="fren-meta">
+                            <img src="./assets/images/3d-trophy.png" width="12px" onerror="this.outerHTML='🏆'">
+                            <span class="tier">Gold</span>
+                            <span class="dot">•</span>
+                            <img src="./assets/images/coin.png" width="12px" onerror="this.style.display='none'">
                             <span>1,165,402</span>
                         </div>
                     </div>
                 </div>
-
-                <div class="frens-data-count">
-                    <span>+63k</span>
-                    <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 5L14.15 10C14.4237 10.2563 14.6419 10.5659 14.791 10.9099C14.9402 11.2539 15.0171 11.625 15.0171 12C15.0171 12.375 14.9402 12.7458 14.791 13.0898C14.6419 13.4339 14.4237 13.7437 14.15 14L9 19" stroke="#ffffff" opacity="0.4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <div class="fren-right">
+                    <span class="fren-earn">+63k</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 5l5.15 5c.55.51.85 1.23.85 2s-.3 1.49-.85 2L9 19" stroke="#fff" opacity="0.3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
             </div>
 
-            <div class="frens-data">
-                <div class="frens-profile">
-                    <div class="frens-profile-photo">
+            <div class="fren-item">
+                <div class="fren-left">
+                    <div class="fren-avatar">
                         <img src="" alt="">
+                        <div class="fren-avatar-letter">S</div>
                     </div>
-                    <div class="frens-profile-data">
-                        <h4>User</h4>
-                        <div>
-                            <img src="./assets/images/3d-trophy.png" width="15px">
-                            <span>Gold</span>
-                            <span>•</span>
-                            <img src="./assets/images/coin.png" width="15px">
-                            <span>1,165,402</span>
+                    <div class="fren-info">
+                        <h4>Sara</h4>
+                        <div class="fren-meta">
+                            <img src="./assets/images/3d-trophy.png" width="12px" onerror="this.outerHTML='🏆'">
+                            <span class="tier">Silver</span>
+                            <span class="dot">•</span>
+                            <img src="./assets/images/coin.png" width="12px" onerror="this.style.display='none'">
+                            <span>842,100</span>
                         </div>
                     </div>
                 </div>
+                <div class="fren-right">
+                    <span class="fren-earn">+9.5k</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 5l5.15 5c.55.51.85 1.23.85 2s-.3 1.49-.85 2L9 19" stroke="#fff" opacity="0.3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
 
-                <div class="frens-data-count">
-                    <span>+63k</span>
-                    <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 5L14.15 10C14.4237 10.2563 14.6419 10.5659 14.791 10.9099C14.9402 11.2539 15.0171 11.625 15.0171 12C15.0171 12.375 14.9402 12.7458 14.791 13.0898C14.6419 13.4339 14.4237 13.7437 14.15 14L9 19" stroke="#ffffff" opacity="0.4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <div class="fren-item">
+                <div class="fren-left">
+                    <div class="fren-avatar">
+                        <img src="" alt="">
+                        <div class="fren-avatar-letter">M</div>
+                    </div>
+                    <div class="fren-info">
+                        <h4>Mike</h4>
+                        <div class="fren-meta">
+                            <img src="./assets/images/3d-trophy.png" width="12px" onerror="this.outerHTML='🏆'">
+                            <span class="tier">Bronze</span>
+                            <span class="dot">•</span>
+                            <img src="./assets/images/coin.png" width="12px" onerror="this.style.display='none'">
+                            <span>312,880</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="fren-right">
+                    <span class="fren-earn">+3.2k</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 5l5.15 5c.55.51.85 1.23.85 2s-.3 1.49-.85 2L9 19" stroke="#fff" opacity="0.3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="frens-invite">
-        <div class="frens-invite-button">
-            <span>Invite a fren</span>
-        </div>
+    <!-- Invite button -->
+    <div class="invite-bar">
+        <button class="invite-btn" onclick="handleInvite(event)">
+            👥 Invite a Fren
+        </button>
     </div>
 
     <script src="./assets/js/charge.js"></script>
+    <script>
+        // Particles
+        const container = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = (2 + Math.random() * 3).toFixed(1) + 'px';
+            p.style.cssText = `--x:${Math.random()*100}%;--dur:${5+Math.random()*7}s;--delay:-${Math.random()*8}s;--s:${size};`;
+            container.appendChild(p);
+        }
 
+        // Ripple
+        function handleInvite(e) {
+            const btn = e.currentTarget;
+            const r = document.createElement('span');
+            r.className = 'ripple';
+            const size = Math.max(btn.offsetWidth, btn.offsetHeight);
+            r.style.cssText = `width:${size}px;height:${size}px;left:${e.offsetX-size/2}px;top:${e.offsetY-size/2}px`;
+            btn.appendChild(r);
+            setTimeout(() => r.remove(), 700);
+
+            // Share API if available
+            if (navigator.share) {
+                navigator.share({ title: 'CoinTap', text: "O'ynashga taklif qilaman! 🪙", url: window.location.origin });
+            }
+        }
+    </script>
 </body>
 </html>
